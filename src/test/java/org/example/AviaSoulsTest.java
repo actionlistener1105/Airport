@@ -1,5 +1,7 @@
 package org.example;
+
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AviaSoulsTest {
@@ -51,5 +53,21 @@ public class AviaSoulsTest {
         assertEquals(1, comparator.compare(longFlight, shortFlight));
         assertEquals(0, comparator.compare(mediumFlight, mediumFlight));
     }
-    
+
+    @Test
+    void shouldSearchAndSortByFlightDuration() {
+        AviaSouls manager = new AviaSouls();
+
+        manager.add(new Ticket("MOW", "LED", 6000, 1000, 1300));
+        manager.add(new Ticket("MOW", "LED", 5000, 1000, 1200));
+        manager.add(new Ticket("MOW", "LED", 7000, 1000, 1400));
+
+        TicketTimeComparator byDuration = new TicketTimeComparator();
+        Ticket[] result = manager.searchAndSortBy("MOW", "LED", byDuration);
+
+        assertEquals(3, result.length);
+        assertEquals(200, result[0].getTimeTo() - result[0].getTimeFrom());
+        assertEquals(300, result[1].getTimeTo() - result[1].getTimeFrom());
+        assertEquals(400, result[2].getTimeTo() - result[2].getTimeFrom());
+    }
 }
