@@ -1,46 +1,59 @@
 package org.example;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AviaSoulsTest {
 
+    // Сравнение по цене (compareTo возвращает числа, поэтому assertArrayEquals тут не нужен)
     @Test
     void shouldCompareTicketsByPrice() {
         Ticket cheap = new Ticket("MOW", "LED", 5000, 1000, 1200);
         Ticket expensive = new Ticket("MOW", "LED", 12000, 1100, 1400);
         Ticket samePrice = new Ticket("MOW", "LED", 5000, 900, 1100);
 
-        assertEquals(-1, cheap.compareTo(expensive));
-        assertEquals(1, expensive.compareTo(cheap));
-        assertEquals(0, cheap.compareTo(samePrice));
+        Assertions.assertEquals(-1, cheap.compareTo(expensive));
+        Assertions.assertEquals(1, expensive.compareTo(cheap));
+        Assertions.assertEquals(0, cheap.compareTo(samePrice));
     }
 
+    // Должен вернуть билеты, отсортированные по возрастанию цены
     @Test
     void shouldReturnSortedTicketsByPriceInSearch() {
         AviaSouls manager = new AviaSouls();
-        manager.add(new Ticket("MOW", "LED", 12000, 1000, 1300));
-        manager.add(new Ticket("MOW", "LED", 5000, 800, 1030));
-        manager.add(new Ticket("MOW", "LED", 7000, 900, 1130));
+
+        Ticket expensive = new Ticket("MOW", "LED", 12000, 1000, 1300);
+        Ticket cheap = new Ticket("MOW", "LED", 5000, 800, 1030);
+        Ticket medium = new Ticket("MOW", "LED", 7000, 900, 1130);
+
+        manager.add(expensive);
+        manager.add(cheap);
+        manager.add(medium);
 
         Ticket[] result = manager.search("MOW", "LED");
 
-        assertEquals(3, result.length);
-        assertEquals(5000, result[0].getPrice());
-        assertEquals(7000, result[1].getPrice());
-        assertEquals(12000, result[2].getPrice());
+        // Ожидаем билеты в порядке возрастания цены: 5000 -> 7000 -> 12000
+        Ticket[] expected = new Ticket[]{cheap, medium, expensive};
+
+        Assertions.assertArrayEquals(expected, result,
+                "Билеты должны вернуться в порядке возрастания цены");
     }
 
+    // Должен вернуть пустой массив, если совпадений нет
     @Test
     void shouldReturnEmptyArrayWhenNoMatchesInSearch() {
         AviaSouls manager = new AviaSouls();
         manager.add(new Ticket("MOW", "LED", 6000, 1000, 1200));
 
         Ticket[] result = manager.search("KZN", "LED");
-        assertEquals(0, result.length);
+
+        Ticket[] expected = new Ticket[]{};
+
+        Assertions.assertArrayEquals(expected, result,
+                "При отсутствии совпадений должен возвращаться пустой массив, а не null");
     }
 
+    // Сравнение по длительности полёта (compare возвращает числа — assertArrayEquals не применим)
     @Test
     void shouldCompareByFlightDuration() {
         Ticket shortFlight = new Ticket("MOW", "LED", 6000, 1000, 1200);
@@ -49,25 +62,30 @@ public class AviaSoulsTest {
 
         TicketTimeComparator comparator = new TicketTimeComparator();
 
-        assertEquals(-1, comparator.compare(shortFlight, longFlight));
-        assertEquals(1, comparator.compare(longFlight, shortFlight));
-        assertEquals(0, comparator.compare(mediumFlight, mediumFlight));
+        Assertions.assertEquals(-1, comparator.compare(shortFlight, longFlight));
+        Assertions.assertEquals(1, comparator.compare(longFlight, shortFlight));
+        Assertions.assertEquals(0, comparator.compare(mediumFlight, mediumFlight));
     }
 
+    // Должен вернуть билеты, отсортированные по возрастанию длительности
     @Test
     void shouldSearchAndSortByFlightDuration() {
         AviaSouls manager = new AviaSouls();
 
-        manager.add(new Ticket("MOW", "LED", 6000, 1000, 1300));
-        manager.add(new Ticket("MOW", "LED", 5000, 1000, 1200));
-        manager.add(new Ticket("MOW", "LED", 7000, 1000, 1400));
+        Ticket mediumFlight = new Ticket("MOW", "LED", 6000, 1000, 1300);
+        Ticket shortFlight = new Ticket("MOW", "LED", 5000, 1000, 1200);
+        Ticket longFlight = new Ticket("MOW", "LED", 7000, 1000, 1400);
+
+        manager.add(mediumFlight);
+        manager.add(shortFlight);
+        manager.add(longFlight);
 
         TicketTimeComparator byDuration = new TicketTimeComparator();
         Ticket[] result = manager.searchAndSortBy("MOW", "LED", byDuration);
+        Ticket[] expected = new Ticket[]{shortFlight, mediumFlight, longFlight};
 
-        assertEquals(3, result.length);
-        assertEquals(200, result[0].getTimeTo() - result[0].getTimeFrom());
-        assertEquals(300, result[1].getTimeTo() - result[1].getTimeFrom());
-        assertEquals(400, result[2].getTimeTo() - result[2].getTimeFrom());
+        Assertions.assertArrayEquals(expected, result,
+                "Билеты должны вернуться в порядке возрастания длительности полёта");
     }
 }
+
